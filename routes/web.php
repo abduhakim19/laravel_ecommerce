@@ -10,6 +10,8 @@ use App\Http\Controllers\admin\ProductController;
 use App\Http\Controllers\admin\ProductSubCategoryController;
 use App\Http\Controllers\admin\SubCategoryController;
 use App\Http\Controllers\admin\TempImagesController;
+use App\Http\Controllers\admin\ProductImageController;
+use App\Http\Controllers\FrontController;
 use App\Models\SubCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -25,9 +27,11 @@ use Illuminate\Support\Str;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
+
+Route::get('/', [FrontController::class, 'index'])->name('front.home');
 
 Route::group(['prefix' => 'admin'], function () {
     Route::group(['middleware' => 'admin.guest'], function () {
@@ -70,8 +74,9 @@ Route::group(['prefix' => 'admin'], function () {
         Route::get('/product', [ProductController::class, 'index'])->name('product.index');
         Route::get('/product/create', [ProductController::class, 'create'])->name('product.create');
         Route::post('/product', [ProductController::class, 'store'])->name('product.store');
-        Route::get('/product/{brand}/edit', [ProductController::class, 'edit'])->name('product.edit');
-        Route::put('/product/{brand}', [ProductController::class, 'update'])->name('product.update');
+        Route::get('/product/{product}/edit', [ProductController::class, 'edit'])->name('product.edit');
+        Route::put('/product/{product}', [ProductController::class, 'update'])->name('product.update');
+        Route::delete('/product/{product}', [ProductController::class, 'destroy'])->name('product.delete');
 
         //
         Route::get('/product-subcategories', [ProductSubCategoryController::class, 'index'])->name('product-subcategories.index');
@@ -80,6 +85,8 @@ Route::group(['prefix' => 'admin'], function () {
         //temp-images.create
         Route::post('/upload-temp-image', [TempImagesController::class, 'create'])->name('temp-images.create');
 
+        Route::post('/product-images/update', [ProductImageController::class, 'update'])->name('product-images.update');
+        Route::delete('/product-images', [ProductImageController::class, 'destroy'])->name('product-images.destroy');
 
         Route::get('/getSlug', function (Request $request) {
             $slug = '';

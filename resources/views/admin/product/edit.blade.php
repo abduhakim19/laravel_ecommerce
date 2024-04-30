@@ -307,9 +307,12 @@
 
         Dropzone.autoDiscover = false;
         const dropzone = $('#image').dropzone({
-            url: "{{ route('temp-images.create') }}",
+            url: "{{ route('product-images.update') }}",
             maxFiles: 10,
             paramName: 'image',
+            params: {
+                'product_id' : '{{ $product->id }}'
+            },
             addRemoveLinks: true,
             acceptedFiles: 'image/jpeg, image/png, image/gif',
             headers: {
@@ -336,7 +339,21 @@
         });
 
         function deleteImage(id) {
-            $('#image-row-' + id).remove();
+            if (confirm("Are you sure you want delete image ")) {
+                $('#image-row-' + id).remove();
+                $.ajax({
+                    url: '{{ route("product-images.destroy") }}',
+                    type: 'delete',
+                    data: { id:id },
+                    success: function(response) {
+                        if (response.status == true) {
+                            alert(response.message);
+                        } else {
+                            alert(response.message)
+                        }
+                    }
+                });
+            }
         }
     </script>
 @endsection
