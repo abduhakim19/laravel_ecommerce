@@ -49,6 +49,11 @@
                                         </div>
                                     </div>
                                 </div>
+                                @if(!empty($category->image))
+                                    <div>
+                                        <img width="200" src="{{ assets('uploads/category/thumb/'.$category->image)}}" alt="" />
+                                    </div>
+                                @endif
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">

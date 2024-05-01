@@ -74,6 +74,8 @@ class ProductController extends Controller
             $product->sub_category_id = $request->sub_category;
             $product->brand_id = $request->brand;
             $product->is_featured = $request->is_featured;
+            $product->shipping_returns = $request->shipping_returns;
+            $product->short_description = $request->short_description;
 
             $product->save();
 
@@ -83,7 +85,7 @@ class ProductController extends Controller
 
                     $tempImageInfo = TempImage::find($temp_image_id);
                     $extArray = explode('.', $tempImageInfo->name);
-                    $ext = last($extArray); // like jpg,gif,png etc
+                    $ext = last($extArray); 
 
                     $productImage = new ProductImage();
                     $productImage->product_id = $product->id;
@@ -190,6 +192,8 @@ class ProductController extends Controller
             $product->sub_category_id = $request->sub_category;
             $product->brand_id = $request->brand;
             $product->is_featured = $request->is_featured;
+            $product->shipping_returns = $request->shipping_returns;
+            $product->short_description = $request->short_description;
 
             $product->save();
 
@@ -273,5 +277,36 @@ class ProductController extends Controller
             'status' => true,
             'notFound' => 'Product deleted successfully'
         ]);
+    }
+
+    public function getProducts(Request $request) {
+        $tempProduct = [];
+        if ($request->term != "") {
+            $products = Product::where('title', 'like', '%'. $request->term .'%')->get();
+
+            if ($products != null) {
+                foreach($products as $product) {
+                    $tempProduct[] = array('id' => $product->id, 'text' => $product->title);
+                }
+            }
+
+            // $array = [ 'tags' => [
+            //         [
+            //             "id" => 1,
+            //             "text" => 'mohit'
+            //         ] ,
+            //         [
+            //             "id" => 2,
+            //             "text" => 'ankit'
+            //         ],
+            //         [
+            //             "id" => 3,
+            //             "text" => 'rohit'
+            //         ]
+            //     ]
+            // ];
+
+            print_r($tempProduct);
+        }
     }
 }

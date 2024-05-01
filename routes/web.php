@@ -12,6 +12,7 @@ use App\Http\Controllers\admin\SubCategoryController;
 use App\Http\Controllers\admin\TempImagesController;
 use App\Http\Controllers\admin\ProductImageController;
 use App\Http\Controllers\FrontController;
+use App\Http\Controllers\ShopController;
 use App\Models\SubCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -32,6 +33,8 @@ use Illuminate\Support\Str;
 // });
 
 Route::get('/', [FrontController::class, 'index'])->name('front.home');
+Route::get('/shop/{categorySlug?}/{subCategorySlug?}', [ShopController::class, 'index'])->name('front.shop');
+Route::get('/product/{slug}', [ShopController::class, 'product'])->name('front.product');
 
 Route::group(['prefix' => 'admin'], function () {
     Route::group(['middleware' => 'admin.guest'], function () {
@@ -77,6 +80,7 @@ Route::group(['prefix' => 'admin'], function () {
         Route::get('/product/{product}/edit', [ProductController::class, 'edit'])->name('product.edit');
         Route::put('/product/{product}', [ProductController::class, 'update'])->name('product.update');
         Route::delete('/product/{product}', [ProductController::class, 'destroy'])->name('product.delete');
+        Route::get('/get-products', [ProductController::class, 'getProducts'])->name('product.getProducts');
 
         //
         Route::get('/product-subcategories', [ProductSubCategoryController::class, 'index'])->name('product-subcategories.index');

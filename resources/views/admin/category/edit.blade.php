@@ -185,6 +185,7 @@
             },
             success: function(file, response) {
                 $('#image_id').val(response.image_id);
+                
             }
         })
     </script>
