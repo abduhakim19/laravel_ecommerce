@@ -10,11 +10,12 @@ use Illuminate\Http\Request;
 
 class ShopController extends Controller
 {
-    public function index(Request $request, $categorySlug = null, $subCategorySlug = null) {
+    public function index(Request $request, $categorySlug = null, $subCategorySlug = null)
+    {
         $categorySelected = '';
         $subCategorySelected = '';
         $brandsArray = [];
-        
+
         //$brandsArray = $request->get('brand');
 
         $categories = Category::orderBy('name', 'ASC')
@@ -24,7 +25,7 @@ class ShopController extends Controller
 
         // Apply Filters
         $products = Product::where('status', 1);
-        
+
         if (!empty($categorySlug)) {
             $category = Category::where('slug', $categorySlug)->first();
             $products = $products->where('category_id', $category->id);
@@ -38,15 +39,15 @@ class ShopController extends Controller
         }
 
         if (!empty($request->get('brand'))) {
-            $brandsArray = explode(',',$request->get('brand'));
+            $brandsArray = explode(',', $request->get('brand'));
             $products = $products->whereIn('brand_id', $brandsArray);
         }
 
         if ($request->get('price_max') != '' && $request->get('price_min') != '') {
             if ($request->get('price_max') === 1000) {
-                $products = $products->whereBetween('price', [intval($request->get('price_min')), 100000000]);   
+                $products = $products->whereBetween('price', [intval($request->get('price_min')), 100000000]);
             } else {
-                $products = $products->whereBetween('price', [intval($request->get('price_min')), intval($request->get('price_max'))]);   
+                $products = $products->whereBetween('price', [intval($request->get('price_min')), intval($request->get('price_max'))]);
             }
         }
 
@@ -57,10 +58,8 @@ class ShopController extends Controller
                 $products = $products->orderBy('id', 'DESC');
             } else if ($request->get('sort') == 'price_asc') {
                 $products = $products->orderBy('price', 'ASC');
-               
             } else {
                 $products = $products->orderBy('price', 'DESC');
-                
             }
         } else {
             $products = $products->orderBy('id', 'DESC');
@@ -70,7 +69,7 @@ class ShopController extends Controller
 
 
         $brands = Brand::orderBy('name', 'ASC')->where('status', 1)->get();
-        
+
         $data['categories'] = $categories;
         $data['brands'] = $brands;
         $data['products'] = $products;
@@ -85,16 +84,24 @@ class ShopController extends Controller
         return view('front.shop', $data);
     }
 
-    public function product($slug) {
+    public function product($slug)
+    {
         $product = Product::where('slug', $slug)
             ->with('product_images')->first();
         if ($product == null) {
             abort(404);
         }
-        
+
+        $relatedProducts = [];
+        if ($product->related_products != '') {
+            $productArray = explode(',', $product->related_products);
+            $relatedProducts = Product::whereIn('id', $productArray)->get();
+        }
+
+
         $data['product'] = $product;
-        
+        $data['relatedProducts'] = $relatedProducts;
+
         return view('front.product', $data);
     }
-
 }

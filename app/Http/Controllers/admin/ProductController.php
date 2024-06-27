@@ -18,12 +18,12 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $products = Product::latest('id')->with('product_images')->paginate();
+        $products = Product::latest('id')->with('product_images');
 
         if ($request->get('keyword') != "") {
             $products = $products->where("title", "like", "%" . $request->keyword . "%");
         }
-        //$products = $products->paginate(10);
+        $products = $products->paginate(10);
 
         $data['products'] = $products;
         return view('admin.product.list', $data);
@@ -76,6 +76,8 @@ class ProductController extends Controller
             $product->is_featured = $request->is_featured;
             $product->shipping_returns = $request->shipping_returns;
             $product->short_description = $request->short_description;
+            $product->related_products = (!empty($request->related_products)) ? implode(',', $request->related_products) : '';
+
 
             $product->save();
 
@@ -85,7 +87,7 @@ class ProductController extends Controller
 
                     $tempImageInfo = TempImage::find($temp_image_id);
                     $extArray = explode('.', $tempImageInfo->name);
-                    $ext = last($extArray); 
+                    $ext = last($extArray);
 
                     $productImage = new ProductImage();
                     $productImage->product_id = $product->id;
@@ -143,6 +145,14 @@ class ProductController extends Controller
 
         $subCategories = SubCategory::where('category_id', $product->category_id)->get();
 
+        $relatedProducts = [];
+        if ($product->related_products != '') {
+            $productArray = explode(',', $product->related_products);
+            $relatedProducts = Product::whereIn('id', $productArray)
+                ->with('product_images')
+                ->get();
+        }
+
         $data = [];
 
         $categories = Category::orderBy('name', 'ASC')->geT();
@@ -152,8 +162,8 @@ class ProductController extends Controller
         $data['product'] = $product;
         $data['subCategories'] = $subCategories;
         $data['productImages'] = $productImages;
+        $data['relatedProducts'] = $relatedProducts;
         return view('admin.product.edit', $data);
-
     }
 
     public function update($id, Request $request)
@@ -163,9 +173,9 @@ class ProductController extends Controller
         //dd($request->image_array);
         $rules = [
             'title' => 'required',
-            'slug' => 'required|unique:products,slug,'.$product->id,',id',
+            'slug' => 'required|unique:products,slug,' . $product->id, ',id',
             'price' => 'required|numeric',
-            'sku' => 'required|unique:products,sku,'.$product->sku,',id',
+            'sku' => 'required|unique:products,sku,' . $product->sku, ',id',
             'track_qty' => 'required|in:Yes,No',
             'category' => 'required|numeric',
             'is_featured' => 'required|in:Yes,No',
@@ -194,6 +204,7 @@ class ProductController extends Controller
             $product->is_featured = $request->is_featured;
             $product->shipping_returns = $request->shipping_returns;
             $product->short_description = $request->short_description;
+            $product->related_products = (!empty($request->related_products)) ? implode(',', $request->related_products) : '';
 
             $product->save();
 
@@ -259,12 +270,12 @@ class ProductController extends Controller
             ]);
         }
 
-        $productImages = ProductImage::where('product_id',$id)->get();
+        $productImages = ProductImage::where('product_id', $id)->get();
 
         if (!empty($productImages)) {
             foreach ($productImages as $productImage) {
-                File::delete(public_path('uploads/product/large/'.$productImage->image));  
-                File::delete(public_path('uploads/product/small/'.$productImage->image));  
+                File::delete(public_path('uploads/product/large/' . $productImage->image));
+                File::delete(public_path('uploads/product/small/' . $productImage->image));
             }
 
             ProductImage::where('product_id', $id)->get();
@@ -279,34 +290,21 @@ class ProductController extends Controller
         ]);
     }
 
-    public function getProducts(Request $request) {
+    public function getProducts(Request $request)
+    {
         $tempProduct = [];
         if ($request->term != "") {
-            $products = Product::where('title', 'like', '%'. $request->term .'%')->get();
+            $products = Product::where('title', 'like', '%' . $request->term . '%')->get();
 
             if ($products != null) {
-                foreach($products as $product) {
+                foreach ($products as $product) {
                     $tempProduct[] = array('id' => $product->id, 'text' => $product->title);
                 }
             }
-
-            // $array = [ 'tags' => [
-            //         [
-            //             "id" => 1,
-            //             "text" => 'mohit'
-            //         ] ,
-            //         [
-            //             "id" => 2,
-            //             "text" => 'ankit'
-            //         ],
-            //         [
-            //             "id" => 3,
-            //             "text" => 'rohit'
-            //         ]
-            //     ]
-            // ];
-
-            print_r($tempProduct);
+            return response()->json([
+                'tags' => $tempProduct,
+                'status' => true
+            ]);
         }
     }
 }

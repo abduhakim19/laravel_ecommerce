@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('products', function(Blueprint $table) {
+        Schema::table('products', function (Blueprint $table) {
             $table->text('short_description')
                 ->nullable()
                 ->after('description');
@@ -31,10 +31,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $table->dropColumn('short_description');
+        Schema::table('products', function (Blueprint $table) {
+            $table->dropColumn('short_description');
 
-        $table->dropColumn('shipping_returns');
+            $table->dropColumn('shipping_returns');
 
-        $table->dropColumn('related_products');
+            $table->dropColumn('related_products');
+        });
     }
 };
